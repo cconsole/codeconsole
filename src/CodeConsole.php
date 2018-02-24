@@ -46,7 +46,7 @@ class CodeConsole
         if (self::$client === null)
         {
             self::$client = new Client([
-                'base_uri' => 'https://codeconsole.io',
+                'base_uri' => 'https://api.codeconsole.io',
                 'timeout' => 2,
             ]);
         }
