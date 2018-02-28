@@ -61,7 +61,11 @@ class CodeConsole
     static private function send($level, $message, $context)
     {
         if (empty(self::$apiKey)) {
-            throw new \Exception('Missing API Key');
+            if (defined('CODE_CONSOLE_API_KEY')) {
+                self::setApiKey(CODE_CONSOLE_API_KEY);
+            } else {
+                throw new \Exception('Missing API Key');
+            }
         }
 
         if (self::$client === null)
