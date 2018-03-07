@@ -8,6 +8,8 @@ class CodeConsole
     private static $apiKey;
     private static $apiUrl;
 
+    const LOG = 'log';
+
     public static function setApiKey($key) 
     {
         self::$apiKey = $key;
@@ -15,46 +17,40 @@ class CodeConsole
 
     public static function __callStatic($n, $a)
     {
-        if ($n === 'log' && (
-            count($a) === 1 
-            || !in_array($a[0], array('emergency','alert','critical','error','warning','notice','info','debug')))) {
-            return;
+        if ($n === self::LOG && count($a) === 1) {
+            array_unshift($a, LogLevel::NOTICE);
         }
 
-        switch(count($a))
-        {
-            case 1:
-                if (is_string($a[0])) {
-                    self::$n($a[0]);
-                    break;
-                }
-            case 2:
-                if ($n === 'log') {
-                    self::$a[0]($a[1]);
-                } else {
-                    if (is_string($a[0]) && is_array($a[1])) {
-                        $fn = array_shift($a);
-                        self::$n($fn, $a[0]);
-                        break;
-                    }
-                }
-            case 3:
-                if ($n === 'log') {
-                    if (is_string($a[0]) && is_string($a[1]) && is_array($a[2])) {
-                        self::{$a[0]}($a[1], $a[2]);
-                        break;
-                    }
-                }
-            default:
-                if ($n === 'log') {
+        $c = count($a);
+
+        if ($c === 1) {
+            if (is_string($a[0])) {
+                return self::{$n}($a[0]);
+            }
+        } elseif ($c === 2) {
+            if ($n === self::LOG) {
+                return self::{$a[0]}($a[1]);
+            } else {
+                if (is_string($a[0]) && is_array($a[1])) {
                     $fn = array_shift($a);
-                    $m = array_shift($a);
-                    self::$fn($m, $a);
-                } else {
-                    $fn = array_shift($a);
-                    self::$n($fn, $a);
+                    return self::{$n}($fn, $a[0]);
                 }
-                break;
+            }
+        } elseif ($c === 3) {
+            if ($n === self::LOG) {
+                if (is_string($a[0]) && is_string($a[1]) && is_array($a[2])) {
+                    return self::{$a[0]}($a[1], $a[2]);
+                }
+            }
+        }
+
+        if ($n === self::LOG) {
+            $fn = array_shift($a);
+            $m = array_shift($a);
+            return self::{$fn}($m, $a);
+        } else {
+            $fn = array_shift($a);
+            return self::{$n}($fn, $a);
         }
     }
 
@@ -114,7 +110,7 @@ class CodeConsole
         }
 
         $url = defined('CODE_CONSOLE_API_URL') ? CODE_CONSOLE_API_URL : 'https://api.codeconsole.io';
-        $dateUtc = new \DateTime(null, new \DateTimeZone("UTC"));
+        $dateUtc = new \DateTime(null, new \DateTimeZone('UTC'));
 
         $content = http_build_query(array(
             'key' => self::$apiKey,
