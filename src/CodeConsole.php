@@ -99,6 +99,17 @@ class CodeConsole
         self::send($level, $message, $context);
     }
 
+    private static function backtrace()
+    {
+        $r = array('file' => '', 'line' => '');
+        $b = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 4);
+        if (isset($b[3])) {
+            $r['file'] = $b[3]['file'];
+            $r['line'] = $b[3]['line'];
+        }
+        return $r;
+    }
+
     private static function send($level, $message, $context)
     {
         if (empty(self::$apiKey)) {
@@ -111,12 +122,14 @@ class CodeConsole
 
         $url = defined('CODE_CONSOLE_API_URL') ? CODE_CONSOLE_API_URL : 'https://api.codeconsole.io';
         $dateUtc = new \DateTime(null, new \DateTimeZone('UTC'));
+        $backTrace = self::backtrace();
 
         $content = http_build_query(array(
             'key' => self::$apiKey,
             'type' => $level,
             'data' => json_encode(array_merge(array($message), $context)),
             't' => $dateUtc->getTimestamp(),
+            'b' => json_encode($backTrace),
         ));
 
         $options = array(
