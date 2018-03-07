@@ -1,64 +1,109 @@
 <?php namespace cconsole;
 
-use GuzzleHttp\Client;
 use Psr\Log\LogLevel;
 
 class CodeConsole
 {
     private static $client = null;
     private static $apiKey;
+    private static $apiUrl;
 
-    static public function setApiKey($key) 
+    public static function setApiKey($key) 
     {
         self::$apiKey = $key;
     }
 
-    static public function emergency($message, array $context = array())
+    public static function __callStatic($n, $a)
+    {
+        if ($n === 'log' && (
+            count($a) === 1 
+            || !in_array($a[0], array('emergency','alert','critical','error','warning','notice','info','debug')))) {
+            return;
+        }
+
+        switch(count($a))
+        {
+            case 1:
+                if (is_string($a[0])) {
+                    self::$n($a[0]);
+                    break;
+                }
+            case 2:
+                if ($n === 'log') {
+                    self::$a[0]($a[1]);
+                } else {
+                    if (is_string($a[0]) && is_array($a[1])) {
+                        $fn = array_shift($a);
+                        self::$n($fn, $a[0]);
+                        break;
+                    }
+                }
+            case 3:
+                if ($n === 'log') {
+                    if (is_string($a[0]) && is_string($a[1]) && is_array($a[2])) {
+                        self::{$a[0]}($a[1], $a[2]);
+                        break;
+                    }
+                }
+            default:
+                if ($n === 'log') {
+                    $fn = array_shift($a);
+                    $m = array_shift($a);
+                    self::$fn($m, $a);
+                } else {
+                    $fn = array_shift($a);
+                    self::$n($fn, $a);
+                }
+                break;
+        }
+    }
+
+    private static function emergency($message, array $context = array())
     {
         self::send(LogLevel::EMERGENCY, $message, $context);
     }
 
-    static public function alert($message, array $context = array())
+    private static function alert($message, array $context = array())
     {
         self::send(LogLevel::ALERT, $message, $context);
     }
 
-    static public function critical($message, array $context = array())
+    private static function critical($message, array $context = array())
     {
         self::send(LogLevel::CRITICAL, $message, $context);
     }
 
-    static public function error($message, array $context = array())
+    private static function error($message, array $context = array())
     {
         self::send(LogLevel::ERROR, $message, $context);
     }
 
-    static public function warning($message, array $context = array())
+    private static function warning($message, array $context = array())
     {
         self::send(LogLevel::WARNING, $message, $context);
     }
 
-    static public function notice($message, array $context = array())
+    private static function notice($message, array $context = array())
     {
         self::send(LogLevel::NOTICE, $message, $context);
     }
 
-    static public function info($message, array $context = array())
+    private static function info($message, array $context = array())
     {
         self::send(LogLevel::INFO, $message, $context);
     }
 
-    static public function debug($message, array $context = array())
+    private static function debug($message, array $context = array())
     {
         self::send(LogLevel::DEBUG, $message, $context);
     }
 
-    static public function log($level, $message, array $context = array())
+    private static function log($level, $message, array $context = array())
     {
         self::send($level, $message, $context);
     }
 
-    static private function send($level, $message, $context)
+    private static function send($level, $message, $context)
     {
         if (empty(self::$apiKey)) {
             if (defined('CODE_CONSOLE_API_KEY')) {
@@ -68,20 +113,25 @@ class CodeConsole
             }
         }
 
-        if (self::$client === null)
-        {
-            self::$client = new Client([
-                'base_uri' => 'https://api.codeconsole.io',
-                'timeout' => 2,
-            ]);
-        }
+        $url = defined('CODE_CONSOLE_API_URL') ? CODE_CONSOLE_API_URL : 'https://api.codeconsole.io';
+        $dateUtc = new \DateTime(null, new \DateTimeZone("UTC"));
 
-        self::$client->post('api/log', [
-            'form_params' => [
-                'key' => self::$apiKey,
-                'type' => $level,
-                'data' => json_encode(array_merge(array($message), $context)),
-            ]
-        ]);
+        $content = http_build_query(array(
+            'key' => self::$apiKey,
+            'type' => $level,
+            'data' => json_encode(array_merge(array($message), $context)),
+            't' => $dateUtc->getTimestamp(),
+        ));
+
+        $options = array(
+            'http' => array(
+                'method' => 'POST',
+                'header' => 'Content-type: application/x-www-form-urlencoded',
+                'content' => $content,
+            )
+        );
+
+        $context = stream_context_create($options);
+        file_get_contents($url . '/api/log', false, $context);
     }
 }
