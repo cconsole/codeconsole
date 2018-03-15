@@ -113,7 +113,9 @@ class CodeConsole
     private static function send($level, $message, $context)
     {
         if (empty(self::$apiKey)) {
-            if (defined('CODE_CONSOLE_API_KEY')) {
+            if (defined('LARAVEL_START') && function_exists('env') && ($key = env('CODE_CONSOLE_API_KEY')) !== null) {
+                self::setApiKey($key);
+            } elseif (defined('CODE_CONSOLE_API_KEY')) {
                 self::setApiKey(CODE_CONSOLE_API_KEY);
             } else {
                 throw new \Exception('Missing API Key');
