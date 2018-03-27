@@ -7,10 +7,13 @@ class CodeConsole
     private static $client = null;
     private static $apiKey;
     private static $apiUrl;
+    private static $timers = [];
 
     const LOG = 'log';
+    const TIME_START = 'startTimer';
+    const TIME_STOP = 'stopTimer';
 
-    public static function setApiKey($key) 
+    public static function setApiKey($key)
     {
         self::$apiKey = $key;
     }
@@ -18,7 +21,7 @@ class CodeConsole
     public static function __callStatic($n, $a)
     {
         if ($n === self::LOG && count($a) === 1) {
-            array_unshift($a, LogLevel::NOTICE);
+            array_unshift($a, LogLevel::INFO);
         }
 
         $c = count($a);
@@ -99,6 +102,20 @@ class CodeConsole
         self::send($level, $message, $context);
     }
 
+    private static function startTimer($name = 'default', array $context = array())
+    {
+        self::$timers[$name] = microtime(true);
+        self::send(self::TIME_START, $name, $context);
+    }
+
+    private static function stopTimer($name = 'default', array $context = array())
+    {
+        if (isset(self::$timers[$name])) {
+            self::$timers[$name] = microtime(true) - self::$timers[$name];
+        }
+        self::send(self::TIME_STOP, $name, $context);
+    }
+
     private static function backtrace()
     {
         $r = array('file' => '', 'line' => '');
@@ -132,6 +149,7 @@ class CodeConsole
             'data' => json_encode(array_merge(array($message), $context)),
             't' => $dateUtc->getTimestamp(),
             'b' => json_encode($backTrace),
+            'i' => ($level === self::TIME_STOP) ? round(self::$timers[$message], 4) : '',
         ));
 
         $options = array(
