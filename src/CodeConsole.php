@@ -1,6 +1,7 @@
 <?php namespace cconsole;
 
 use Psr\Log\LogLevel;
+use cconsole\frameworks\CodeConsoleCodeIgniter;
 
 class CodeConsole
 {
@@ -8,6 +9,7 @@ class CodeConsole
     private static $apiKey;
     private static $apiUrl;
     private static $timers = [];
+    private static $framework = null;
 
     const LOG = 'log';
     const TIME_START = 'startTimer';
@@ -16,6 +18,7 @@ class CodeConsole
     public static function setApiKey($key)
     {
         self::$apiKey = $key;
+        self::determineFramework();
     }
 
     public static function __callStatic($n, $a)
@@ -135,8 +138,13 @@ class CodeConsole
             } elseif (defined('CODE_CONSOLE_API_KEY')) {
                 self::setApiKey(CODE_CONSOLE_API_KEY);
             } else {
-                throw new \Exception('Missing API Key');
+                return;
             }
+        }
+        var_dump(self::$framework);
+        // Don't run in production
+        if (self::$framework !== null && self::$framework->isProduction()) {
+            return;
         }
 
         $url = defined('CODE_CONSOLE_API_URL') ? CODE_CONSOLE_API_URL : 'https://api.codeconsole.io';
@@ -162,5 +170,12 @@ class CodeConsole
 
         $context = stream_context_create($options);
         file_get_contents($url . '/api/log', false, $context);
+    }
+
+    private static function determineFramework()
+    {
+        if (defined('CI_VERSION')) {
+            self::$framework = new CodeConsoleCodeIgniter();
+        }
     }
 }
