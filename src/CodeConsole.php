@@ -141,7 +141,7 @@ class CodeConsole
                 return;
             }
         }
-        var_dump(self::$framework);
+
         // Don't run in production
         if (self::$framework !== null && self::$framework->isProduction()) {
             return;

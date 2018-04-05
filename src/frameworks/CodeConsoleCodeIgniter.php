@@ -1,4 +1,4 @@
-<?php namespace cconsole\frameworks\CodeConsoleCodeIgniter;
+<?php namespace cconsole\frameworks;
 
 use cconsole\frameworks\FrameworkInterface;
 
