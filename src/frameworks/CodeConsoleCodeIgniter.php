@@ -1,6 +1,6 @@
-<?php namespace cconsole\frameworks;
+<?php namespace CodeConsole\frameworks;
 
-use cconsole\frameworks\FrameworkInterface;
+use CodeConsole\frameworks\FrameworkInterface;
 
 class CodeConsoleCodeIgniter implements FrameworkInterface
 {
