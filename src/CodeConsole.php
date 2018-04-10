@@ -51,6 +51,13 @@ abstract class CodeConsole
             return;
         }
 
+        $data = json_encode(array_merge(array($message), $context));
+
+        if (strlen($data) > 2048) {
+            // @todo Error in console
+            return;
+        }
+
         $url = defined('CODE_CONSOLE_API_URL') ? CODE_CONSOLE_API_URL : 'https://api.codeconsole.io';
         $dateUtc = new \DateTime(null, new \DateTimeZone('UTC'));
         $backTrace = $this->backtrace();
@@ -58,7 +65,7 @@ abstract class CodeConsole
         $content = http_build_query(array(
             'key' => $this->apiKey,
             'type' => $level,
-            'data' => json_encode(array_merge(array($message), $context)),
+            'data' => $data,
             't' => $dateUtc->getTimestamp(),
             'b' => json_encode($backTrace),
             'i' => ($level === self::TIME_STOP) ? round($this->timers[$message], 4) : '',
