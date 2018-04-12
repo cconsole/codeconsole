@@ -1,6 +1,7 @@
 <?php namespace CodeConsole;
 
-use CodeConsole\frameworks\CodeConsoleCodeIgniter;
+use CodeConsole\Frameworks\CodeConsoleCodeIgniter;
+use CodeConsole\Services\Request;
 
 abstract class CodeConsole
 {
@@ -8,6 +9,7 @@ abstract class CodeConsole
     protected $apiUrl;
     protected $timers = [];
     protected $framework = null;
+    protected $request;
 
     const LOG = 'log';
     const TIME_START = 'startTimer';
@@ -26,6 +28,7 @@ abstract class CodeConsole
         }
 
         $this->determineFramework();
+        $this->request = new Request;
     }
 
     protected function backtrace()
@@ -54,33 +57,23 @@ abstract class CodeConsole
         $data = json_encode(array_merge(array($message), $context));
 
         if (strlen($data) > 2048) {
-            // @todo Error in console
+            $this->warn('dataTooLarge');
             return;
         }
 
-        $url = defined('CODE_CONSOLE_API_URL') ? CODE_CONSOLE_API_URL : 'https://api.codeconsole.io';
         $dateUtc = new \DateTime(null, new \DateTimeZone('UTC'));
         $backTrace = $this->backtrace();
 
-        $content = http_build_query(array(
+        $data = [
             'key' => $this->apiKey,
             'type' => $level,
             'data' => $data,
             't' => $dateUtc->getTimestamp(),
             'b' => json_encode($backTrace),
             'i' => ($level === self::TIME_STOP) ? round($this->timers[$message], 4) : '',
-        ));
+        ];
 
-        $options = array(
-            'http' => array(
-                'method' => 'POST',
-                'header' => 'Content-type: application/x-www-form-urlencoded',
-                'content' => $content,
-            )
-        );
-
-        $context = stream_context_create($options);
-        file_get_contents($url . '/api/log', false, $context);
+        $this->request->post($data);
     }
 
     protected function determineFramework()
@@ -88,5 +81,14 @@ abstract class CodeConsole
         if (defined('CI_VERSION')) {
             $this->framework = new CodeConsoleCodeIgniter();
         }
+    }
+
+    protected function warn()
+    {
+        $this->request->post([
+            'type' => 'systemWarning',
+            'data' => 'dataTooLarge',
+            'key' => $this->apiKey
+        ], '/api/warn');
     }
 }
