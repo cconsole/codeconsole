@@ -18,6 +18,9 @@
 		"phpunit/phpunit": "5.2.*"
     },
 	"autoload": {
+        "files": [
+            "src/helper_functions.php"
+        ],
         "psr-4": {
             "CodeConsole\\": "src/"
         }

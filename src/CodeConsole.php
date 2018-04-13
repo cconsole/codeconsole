@@ -1,6 +1,6 @@
 <?php namespace CodeConsole;
 
-use CodeConsole\Frameworks\CodeConsoleCodeIgniter;
+use CodeConsole\Frameworks\CodeIgniter\CodeConsoleCodeIgniter;
 use CodeConsole\Services\Request;
 
 abstract class CodeConsole
@@ -56,7 +56,7 @@ abstract class CodeConsole
 
         $data = json_encode(array_merge(array($message), $context));
 
-        if (strlen($data) > 2048) {
+        if (strlen($data) > 10000) {
             $this->warn('dataTooLarge');
             return;
         }
