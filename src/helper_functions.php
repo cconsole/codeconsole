@@ -1,6 +1,6 @@
 <?php
 
-use CodeConsole\LogClient;
+use CodeConsole\MessageClient;
 
 if (!function_exists('cc')) {
     $codeConsoleFrameworkInstance = null;
@@ -10,7 +10,7 @@ if (!function_exists('cc')) {
         global $codeConsoleFrameworkInstance;
 
         if ($codeConsoleFrameworkInstance === null) {
-            $codeConsoleFrameworkInstance = new LogClient;
+            $codeConsoleFrameworkInstance = new MessageClient;
         }
         return $codeConsoleFrameworkInstance;
     }
