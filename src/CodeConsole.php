@@ -37,10 +37,7 @@ abstract class CodeConsole
         $r = array('file' => '', 'line' => '');
         $b = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $l);
 
-        var_dump($b);
-
         for($i = 0; $i < $l; $i++) {
-            echo "<p>class is {$b[$i]['class']}";
             if (isset($b[$i]['class']) && strpos($b[$i]['class'], 'CodeConsole') === false) {
                 break;
             }
