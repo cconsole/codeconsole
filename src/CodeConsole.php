@@ -33,11 +33,24 @@ abstract class CodeConsole
 
     protected function backtrace()
     {
+        $l = 10;
         $r = array('file' => '', 'line' => '');
-        $b = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 4);
-        if (isset($b[3])) {
-            $r['file'] = $b[3]['file'];
-            $r['line'] = $b[3]['line'];
+        $b = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $l);
+
+        var_dump($b);
+
+        for($i = 0; $i < $l; $i++) {
+            echo "<p>class is {$b[$i]['class']}";
+            if (isset($b[$i]['class']) && strpos($b[$i]['class'], 'CodeConsole') === false) {
+                break;
+            }
+        }
+
+        $i--;
+
+        if (isset($b[$i])) {
+            $r['file'] = isset($b[$i]['file']) ? $b[$i]['file'] : '';
+            $r['line'] = isset($b[$i]['line']) ? $b[$i]['line'] : '';
         }
         return $r;
     }
