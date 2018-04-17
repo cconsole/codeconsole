@@ -1,66 +1,65 @@
 <?php namespace CodeConsole;
 
 use Psr\Log\LogLevel;
-use Psr\Log\LoggerInterface;
 
-class LogClient extends CodeConsole implements LoggerInterface
+class LogClient extends CodeConsole
 {
-    public function emergency($message, array $context = [])
+    public function emergency($message, ...$args)
     {
-        return $this->send(LogLevel::EMERGENCY, $message, $context);
+        return $this->send(LogLevel::EMERGENCY, $message, $args);
     }
 
-    public function alert($message, array $context = [])
+    public function alert($message, ...$args)
     {
-        return $this->send(LogLevel::ALERT, $message, $context);
+        return $this->send(LogLevel::ALERT, $message, $args);
     }
 
-    public function critical($message, array $context = [])
+    public function critical($message, ...$args)
     {
-        return $this->send(LogLevel::CRITICAL, $message, $context);
+        return $this->send(LogLevel::CRITICAL, $message, $args);
     }
 
-    public function error($message, array $context = [])
+    public function error($message, ...$args)
     {
-        return $this->send(LogLevel::ERROR, $message, $context);
+        return $this->send(LogLevel::ERROR, $message, $args);
     }
 
-    public function warning($message, array $context = [])
+    public function warning($message, ...$args)
     {
-        return $this->send(LogLevel::WARNING, $message, $context);
+        return $this->send(LogLevel::WARNING, $message, $args);
     }
 
-    public function notice($message, array $context = [])
+    public function notice($message, ...$args)
     {
-        return $this->send(LogLevel::NOTICE, $message, $context);
+        return $this->send(LogLevel::NOTICE, $message, $args);
     }
 
-    public function info($message, array $context = [])
+    public function info($message, ...$args)
     {
-        return $this->send(LogLevel::INFO, $message, $context);
+        return $this->send(LogLevel::INFO, $message, $args);
     }
 
-    public function debug($message, array $context = [])
+    public function debug($message, ...$args)
     {
-        return $this->send(LogLevel::DEBUG, $message, $context);
+        return $this->send(LogLevel::DEBUG, $message, $args);
     }
 
-    public function log($level, $message, array $context = [])
+    public function log($message, ...$args)
     {
-        return $this->send($level, $message, $context);
+        return $this->send(self::LOG, $message, $args);
     }
 
-    public function startTimer($name = 'default', array $context = [])
+    public function startTimer($name = 'default', ...$args)
     {
         $this->timers[$name] = microtime(true);
-        $this->send(self::TIME_START, $name, $context);
+        $this->send(self::TIME_START, $name, $args);
     }
 
-    public function stopTimer($name = 'default', array $context = [])
+    public function stopTimer($name = 'default', ...$args)
     {
         if (isset($this->timers[$name])) {
             $this->timers[$name] = microtime(true) - $this->timers[$name];
         }
-        $this->send(self::TIME_STOP, $name, $context);
+        $this->send(self::TIME_STOP, $name, $args);
     }
 }
