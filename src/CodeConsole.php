@@ -10,6 +10,7 @@ abstract class CodeConsole
     protected $timers = [];
     protected $framework = null;
     protected $request;
+    protected $scriptStart;
 
     const LOG = 'log';
     const TIME_START = 'startTimer';
@@ -17,6 +18,8 @@ abstract class CodeConsole
 
     public function __construct($apiKey = null)
     {
+        $this->scriptStart = (!empty($_SERVER['REQUEST_TIME_FLOAT'])) ? $_SERVER['REQUEST_TIME_FLOAT'] : microtime(true);
+
         if ($apiKey !== null) {
             $this->apiKey = $apiKey;
         } elseif (defined('LARAVEL_START') && function_exists('env') && ($key = env('CODE_CONSOLE_API_KEY')) !== null) {
@@ -29,6 +32,12 @@ abstract class CodeConsole
 
         $this->determineFramework();
         $this->request = new Request;
+    }
+
+    public function __destruct()
+    {
+        $wallTime = round(microtime(true) - $this->scriptStart, 4);
+        $this->recordEnd($wallTime);
     }
 
     protected function backtrace()
@@ -100,5 +109,14 @@ abstract class CodeConsole
             'data' => 'dataTooLarge',
             'key' => $this->apiKey
         ], '/api/warn');
+    }
+
+    protected function recordEnd($wallTime)
+    {
+        $this->request->post([
+            'type' => 'scriptEnd',
+            'data' => $wallTime,
+            'key' => $this->apiKey
+        ], '/api/record_end');
     }
 }
