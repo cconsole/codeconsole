@@ -18,6 +18,7 @@ class Request
                 'method' => 'POST',
                 'header' => 'Content-type: application/x-www-form-urlencoded',
                 'content' => $content,
+                'timeout' => 0.001,
             )
         );
 
