@@ -1,15 +1,17 @@
-<?php namespace CodeConsole\Services;
+<?php namespace CodeConsole\Services\Requests\Drivers;
 
-class Request
+use CodeConsole\Services\Requests\RequestDriverInterface;
+
+class FileGetContents implements RequestDriverInterface
 {
     private $apiUrl;
 
-    public function __construct()
+    public function __construct($apiUrl)
     {
-        $this->apiUrl = defined('CODE_CONSOLE_API_URL') ? CODE_CONSOLE_API_URL : 'https://api.codeconsole.io';
+        $this->apiUrl = $apiUrl;
     }
 
-    public function post($data, $path = '/api/log')
+    public function post($data, $path)
     {
         $content = http_build_query($data);
 

@@ -1,4 +1,4 @@
-<?php namespace CodeConsole\frameworks;
+<?php namespace CodeConsole\Frameworks;
 
 interface FrameworkInterface
 {

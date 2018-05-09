@@ -1,7 +1,7 @@
 <?php namespace CodeConsole;
 
 use CodeConsole\Frameworks\CodeIgniter\CodeConsoleCodeIgniter;
-use CodeConsole\Services\Request;
+use CodeConsole\Services\Requests\Log;
 
 abstract class CodeConsole
 {
@@ -31,7 +31,7 @@ abstract class CodeConsole
         }
 
         $this->determineFramework();
-        $this->request = new Request;
+        $this->request = new Log;
     }
 
     public function __destruct()
