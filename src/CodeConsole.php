@@ -11,6 +11,7 @@ abstract class CodeConsole
     protected $framework = null;
     protected $request;
     protected $scriptStart;
+    protected $lastHash = null;
 
     const LOG = 'log';
     const TIME_START = 'startTimer';
@@ -61,45 +62,27 @@ abstract class CodeConsole
         return $r;
     }
 
-    protected function send($level, $message, $context)
-    {
-        // API Key has to be set
-        if (empty($this->apiKey)) {
-            return;
-        }
-
-        // Don't run in production
-        if ($this->framework !== null && $this->framework->isProduction()) {
-            return;
-        }
-
-        $data = json_encode(array_merge(array($message), $context));
-
-        if (strlen($data) > 10000) {
-            $this->warn('dataTooLarge');
-            return;
-        }
-
-        $dateUtc = new \DateTime(null, new \DateTimeZone('UTC'));
-        $backTrace = $this->backtrace();
-
-        $data = [
-            'key' => $this->apiKey,
-            'type' => $level,
-            'data' => $data,
-            't' => $dateUtc->getTimestamp(),
-            'b' => json_encode($backTrace),
-            'i' => ($level === self::TIME_STOP) ? round($this->timers[$message], 4) : '',
-        ];
-
-        $this->request->post($data);
-    }
-
     protected function determineFramework()
     {
         if (defined('CI_VERSION')) {
             $this->framework = new CodeConsoleCodeIgniter();
         }
+    }
+
+    protected function send($level, $message, $context)
+    {
+        $data = json_encode(array_merge(array($message), $context));
+
+        $backTrace = $this->backtrace();
+
+        $postData = [
+            'type' => $level,
+            'data' => $data,
+            'b' => json_encode($backTrace),
+            'i' => ($level === self::TIME_STOP) ? round($this->timers[$message], 4) : '',
+        ];
+
+        $this->post($postData, '/api/log');
     }
 
     protected function warn()
@@ -113,10 +96,40 @@ abstract class CodeConsole
 
     protected function recordEnd($wallTime)
     {
-        $this->request->post([
+        $this->post([
             'type' => 'scriptEnd',
             'data' => $wallTime,
-            'key' => $this->apiKey
         ], '/api/record_end');
+    }
+
+    protected function post($data, $path)
+    {
+         // API Key has to be set
+        if (empty($this->apiKey)) {
+            return;
+        }
+
+        // Don't run in production
+        if ($this->framework !== null && $this->framework->isProduction()) {
+            return;
+        }
+
+        if (isset($data['data']) && strlen($data['data']) > 10000) {
+            $this->warn('dataTooLarge');
+            return;
+        }
+
+        $dateUtc = new \DateTime(null, new \DateTimeZone('UTC'));
+        $logTime = $dateUtc->getTimestamp();
+
+        $postData = [
+            'key' => $this->apiKey,
+            't' => $logTime,
+            'wf' => $this->lastHash,
+        ];
+
+        $this->request->post($postData + $data, $path);
+
+        $this->lastHash = md5($logTime . $data['data']);
     }
 }
