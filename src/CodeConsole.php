@@ -2,6 +2,7 @@
 
 use CodeConsole\Frameworks\CodeIgniter\CodeConsoleCodeIgniter;
 use CodeConsole\Services\Requests\Log;
+use CodeConsole\Frameworks\Laravel\CodeConsoleLaravel;
 
 abstract class CodeConsole
 {
@@ -66,6 +67,14 @@ abstract class CodeConsole
     {
         if (defined('CI_VERSION')) {
             $this->framework = new CodeConsoleCodeIgniter();
+        } else {
+            $composerPath = base_path('composer.json');
+            if (is_readable($composerPath)) {
+                $composer = json_decode(file_get_contents($composerPath), true);
+                if (json_last_error() === JSON_ERROR_NONE && isset($composer['name']) && $composer['name'] === 'laravel/laravel') {
+                    $this->framework = new CodeConsoleLaravel();
+                }
+            }
         }
     }
 
