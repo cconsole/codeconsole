@@ -24,10 +24,10 @@ abstract class CodeConsole
 
         if ($apiKey !== null) {
             $this->apiKey = $apiKey;
-        } elseif (defined('LARAVEL_START') && function_exists('env') && ($key = env('CODE_CONSOLE_API_KEY')) !== null) {
+        } elseif (defined('LARAVEL_START') && function_exists('env') && ($key = env('CODE_CONSOLE_PROJECT_KEY')) !== null) {
             $this->apiKey = $key;
-        } elseif (defined('CODE_CONSOLE_API_KEY')) {
-            $this->apiKey = CODE_CONSOLE_API_KEY;
+        } elseif (defined('CODE_CONSOLE_PROJECT_KEY')) {
+            $this->apiKey = CODE_CONSOLE_PROJECT_KEY;
         } else {
             return;
         }
