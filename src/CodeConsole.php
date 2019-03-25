@@ -48,7 +48,7 @@ abstract class CodeConsole
         $r = array('file' => '', 'line' => '');
         $b = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $l);
 
-        for($i = 0; $i < $l; $i++) {
+        for ($i = 0; $i < $l; $i++) {
             if (isset($b[$i]['class']) && strpos($b[$i]['class'], 'CodeConsole') === false) {
                 break;
             }
@@ -91,7 +91,7 @@ abstract class CodeConsole
             'i' => ($level === self::TIME_STOP) ? round($this->timers[$message], 4) : '',
         ];
 
-        $this->post($postData, '/api/log');
+        $this->post($postData, '/log');
     }
 
     protected function warn()
@@ -100,7 +100,7 @@ abstract class CodeConsole
             'type' => 'systemWarning',
             'data' => 'dataTooLarge',
             'key' => $this->apiKey
-        ], '/api/warn');
+        ], '/log');
     }
 
     protected function recordEnd($wallTime)
@@ -108,7 +108,7 @@ abstract class CodeConsole
         $this->post([
             'type' => 'scriptEnd',
             'data' => $wallTime,
-        ], '/api/record_end');
+        ], '/log');
     }
 
     protected function post($data, $path)
