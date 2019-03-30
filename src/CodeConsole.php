@@ -123,9 +123,12 @@ abstract class CodeConsole
             return;
         }
 
-        if (isset($data['data']) && strlen($data['data']) > 10000) {
-            $this->warn('dataTooLarge');
-            return;
+        if (isset($data['data'])) {
+            if (strlen($data['data']) > 10000) {
+                $this->warn('dataTooLarge');
+                return;
+            }
+            $data['data'] = json_decode($data['data']);
         }
 
         $dateUtc = new \DateTime(null, new \DateTimeZone('UTC'));
@@ -139,6 +142,6 @@ abstract class CodeConsole
 
         $this->request->post($postData + $data, $path);
 
-        $this->lastHash = md5($logTime . $data['data']);
+        $this->lastHash = md5($logTime . json_encode($data['data']));
     }
 }

@@ -13,13 +13,11 @@ class FileGetContents implements RequestDriverInterface
 
     public function post($data, $path)
     {
-        $content = http_build_query($data);
-
         $options = array(
             'http' => array(
                 'method' => 'POST',
-                'header' => 'Content-type: application/x-www-form-urlencoded',
-                'content' => $content,
+                'header' => 'Content-type: application/json',
+                'content' => json_encode($data),
             )
         );
 

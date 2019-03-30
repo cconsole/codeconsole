@@ -13,9 +13,10 @@ class LinuxCurl implements RequestDriverInterface
 
     public function post($data, $path)
     {
-        $content = escapeshellarg(http_build_query($data));
+        $content = escapeshellarg(json_encode($data));
         $url = escapeshellarg($this->apiUrl . $path);
-        $cmd = "curl --data {$content} {$url} > /dev/null 2>/dev/null &";
+        $header = '-H "Content-Type: application/json"';
+        $cmd = "curl -d {$content} {$url} {$header} > /dev/null 2>/dev/null &";
         shell_exec($cmd);
     }
 }
