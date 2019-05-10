@@ -142,6 +142,6 @@ abstract class CodeConsole
 
         $this->request->post($postData + $data, $path);
 
-        $this->lastHash = md5($logTime . json_encode($data['data']));
+        $this->lastHash = md5(preg_replace('/[^\w]/', '', $logTime . json_encode($data['data'])));
     }
 }
