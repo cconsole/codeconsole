@@ -113,12 +113,10 @@ abstract class CodeConsole
 
     protected function post($data, $path)
     {
-         // API Key has to be set
         if (empty($this->apiKey)) {
             return;
         }
 
-        // Don't run in production
         if ($this->framework !== null && $this->framework->isProduction()) {
             return;
         }
