@@ -1,1 +1,1 @@
-Please see [https://www.codeconsole.io/documentation] for documentation.
+Please see https://www.codeconsole.io/documentation for documentation.
