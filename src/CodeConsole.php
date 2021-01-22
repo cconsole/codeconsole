@@ -1,4 +1,6 @@
-<?php namespace CodeConsole;
+<?php
+
+namespace CodeConsole;
 
 use CodeConsole\Frameworks\CodeIgniter\CodeConsoleCodeIgniter;
 use CodeConsole\Services\Requests\Log;
@@ -13,6 +15,7 @@ abstract class CodeConsole
     protected $request;
     protected $scriptStart;
     protected $lastHash = null;
+    protected $callCount = 0;
 
     const LOG = 'log';
     const TIME_START = 'startTimer';
@@ -63,6 +66,20 @@ abstract class CodeConsole
         return $r;
     }
 
+    protected function backtraceV2()
+    {
+        return array_reduce(
+            array_reverse(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS)),
+            function ($result, $b) {
+                if (isset($b['class']) && strpos($b['class'], 'CodeConsole\CodeConsole') === false) {
+                    $result[] = ['file' => $b['file'], 'line' => $b['line']];
+                }
+                return $result;
+            },
+            []
+        );
+    }
+
     protected function determineFramework()
     {
         if (defined('CI_VERSION')) {
@@ -80,16 +97,26 @@ abstract class CodeConsole
 
     protected function send($level, $message, $context)
     {
-        $data = json_encode(array_merge(array($message), $context));
-
-        $backTrace = $this->backtrace();
-
-        $postData = [
-            'type' => $level,
-            'data' => $data,
-            'b' => json_encode($backTrace),
-            'i' => ($level === self::TIME_STOP) ? round($this->timers[$message], 4) : '',
-        ];
+        $postData = (defined('CODE_CONSOLE_BETA') && CODE_CONSOLE_BETA === true)
+            ? [
+                'projectKey' => $this->apiKey,
+                'processId' => uniqid(),
+                'startTime' => $this->scriptStart,
+                'time' => (new \DateTime(null, new \DateTimeZone('UTC')))->getTimestamp(),
+                'type' => 'log',
+                'data' => json_encode([
+                    'level' => $level,
+                    'log' => [$message],
+                ]),
+                'backtrace' => $this->backtraceV2(),
+                'count' => ++$this->callCount,
+            ]
+            : [
+                'type' => $level,
+                'data' => json_encode(array_merge(array($message), $context)),
+                'b' => json_encode($this->backtrace()),
+                'i' => ($level === self::TIME_STOP) ? round($this->timers[$message], 4) : '',
+            ];
 
         $this->post($postData, '/log');
     }
@@ -132,11 +159,13 @@ abstract class CodeConsole
         $dateUtc = new \DateTime(null, new \DateTimeZone('UTC'));
         $logTime = $dateUtc->getTimestamp();
 
-        $postData = [
-            'key' => $this->apiKey,
-            't' => $logTime,
-            'wf' => $this->lastHash,
-        ];
+        $postData = (defined('CODE_CONSOLE_BETA') && CODE_CONSOLE_BETA === true)
+            ? []
+            : [
+                'key' => $this->apiKey,
+                't' => $logTime,
+                'wf' => $this->lastHash,
+            ];
 
         $this->request->post($postData + $data, $path);
 

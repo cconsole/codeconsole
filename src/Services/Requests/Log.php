@@ -1,4 +1,6 @@
-<?php namespace CodeConsole\Services\Requests;
+<?php
+
+namespace CodeConsole\Services\Requests;
 
 use CodeConsole\Services\Requests\Drivers\FileGetContents;
 use CodeConsole\Services\Requests\Drivers\LinuxWget;
@@ -32,8 +34,12 @@ class Log
         }
     }
 
-    public function post($data, $path = '/api/log')
+    public function post($data, $path = '/log')
     {
+        if ($path === '/log' && defined('CODE_CONSOLE_BETA') && CODE_CONSOLE_BETA === true) {
+            $path = '/log2';
+        }
+
         $this->driver->post($data, $path);
     }
 }

@@ -1,4 +1,6 @@
-<?php namespace CodeConsole;
+<?php
+
+namespace CodeConsole;
 
 use Psr\Log\LogLevel;
 
