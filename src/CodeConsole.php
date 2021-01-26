@@ -16,6 +16,7 @@ abstract class CodeConsole
     protected $scriptStart;
     protected $lastHash = null;
     protected $callCount = 0;
+    protected $processId;
 
     const LOG = 'log';
     const TIME_START = 'startTimer';
@@ -37,6 +38,7 @@ abstract class CodeConsole
 
         $this->determineFramework();
         $this->request = new Log;
+        $this->processId = uniqid();
     }
 
     public function __destruct()
@@ -100,13 +102,13 @@ abstract class CodeConsole
         $postData = (defined('CODE_CONSOLE_BETA') && CODE_CONSOLE_BETA === true)
             ? [
                 'projectKey' => $this->apiKey,
-                'processId' => uniqid(),
+                'processId' => $this->processId,
                 'startTime' => $this->scriptStart,
                 'time' => (new \DateTime(null, new \DateTimeZone('UTC')))->getTimestamp(),
                 'type' => 'log',
                 'data' => json_encode([
                     'level' => $level,
-                    'log' => [$message],
+                    'log' => array_merge([$message], $context),
                 ]),
                 'backtrace' => $this->backtraceV2(),
                 'count' => ++$this->callCount,
