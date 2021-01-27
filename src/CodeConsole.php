@@ -162,7 +162,14 @@ abstract class CodeConsole
         $logTime = $dateUtc->getTimestamp();
 
         $postData = (defined('CODE_CONSOLE_BETA') && CODE_CONSOLE_BETA === true)
-            ? []
+            ? ($data['type'] === 'scriptEnd'
+                ? [
+                    'projectKey' => $this->apiKey,
+                    'processId' => $this->processId,
+                    'time' => (new \DateTime(null, new \DateTimeZone('UTC')))->getTimestamp(),
+                    'count' => ++$this->callCount,
+                ]
+                : [])
             : [
                 'key' => $this->apiKey,
                 't' => $logTime,
