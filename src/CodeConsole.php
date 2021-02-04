@@ -152,8 +152,18 @@ abstract class CodeConsole
 
         if (isset($data['data'])) {
             if (strlen($data['data']) > 10000) {
-                $this->warn('dataTooLarge');
-                return;
+                if (defined('CODE_CONSOLE_BETA') && CODE_CONSOLE_BETA === true) {
+                    $data = array_merge($data, [
+                        'data' => json_encode(array_merge((array) json_decode($data['data']), [
+                            'log' => ['Data sent exceeds the 10,000 character limit'],
+                            'level' => 'warning',
+                        ])),
+                        'type' => 'tooLarge',
+                    ]);
+                } else {
+                    $this->warn('dataTooLarge');
+                    return;
+                }
             }
             $data['data'] = json_decode($data['data']);
         }
