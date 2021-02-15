@@ -75,8 +75,8 @@ abstract class CodeConsole
             function ($result, $b) {
                 if (isset($b['class']) && strpos($b['class'], 'CodeConsole\CodeConsole') === false) {
                     $result[] = [
-                        'file' => $b['file'] ? $b['file'] : '',
-                        'line' => $b['line'] ? $b['line'] : ''
+                        'file' => !isset($b['file']) ? $b['file'] : null,
+                        'line' => !isset($b['line']) ? $b['line'] : null
                     ];
                 }
                 return $result;
