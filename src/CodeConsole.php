@@ -74,7 +74,10 @@ abstract class CodeConsole
             array_reverse(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS)),
             function ($result, $b) {
                 if (isset($b['class']) && strpos($b['class'], 'CodeConsole\CodeConsole') === false) {
-                    $result[] = ['file' => $b['file'], 'line' => $b['line']];
+                    $result[] = [
+                        'file' => $b['file'] ? $b['file'] : '',
+                        'line' => $b['line'] ? $b['line'] : ''
+                    ];
                 }
                 return $result;
             },
